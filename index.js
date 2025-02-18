@@ -18,8 +18,9 @@ client.on('ready', async () => {
     console.log(`${client.user.tag} est en ligne !`);
 
     // Vérification des membres existants au démarrage du bot
-    const guild = client.guilds.cache.first(); // Choisit le premier serveur, ajuste si nécessaire
-    const members = await guild.members.fetch(); // Récupère tous les membres
+    for (const guild of client.guilds.cache) {
+        const members = await guild.members.fetch();
+    }
     members.forEach(member => {
         if (member.roles.cache.has(ROLE_1_ID)) {
             console.log(`${member.user.tag} a déjà le rôle interdit !`);
