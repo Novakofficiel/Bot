@@ -1,5 +1,4 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
-
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -9,18 +8,14 @@ const client = new Client({
         GatewayIntentBits.MessageContent
     ]
 });
-
 const ROLE_1_ID = '1331721592538927189'; // Remplace par l'ID du rôle à surveiller
 const ALERT_CHANNEL_ID = '1341151004820901898'; // ID du salon alerte
 const BAN_DELAY = 10000; // 10 secondes
-
 client.on('ready', async () => {
     console.log(`${client.user.tag} est en ligne !`);
-
     // Vérification des membres existants au démarrage du bot
-    for (const guild of client.guilds.cache) {
-        const members = await guild.members.fetch();
-    }
+    const guild = client.guilds.cache.first(); // Choisit le premier serveur, ajuste si nécessaire
+    const members = await guild.members.fetch(); // Récupère tous les membres
     members.forEach(member => {
         if (member.roles.cache.has(ROLE_1_ID)) {
             console.log(`${member.user.tag} a déjà le rôle interdit !`);
@@ -29,7 +24,6 @@ client.on('ready', async () => {
         }
     });
 });
-
 client.on('guildMemberUpdate', async (oldMember, newMember) => {
     console.log(`Mise à jour des rôles pour ${newMember.user.tag}`);
     
@@ -39,7 +33,6 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
         handleRoleAlert(newMember);
     }
 });
-
 client.on('guildMemberAdd', async (member) => {
     console.log(`Nouveau membre rejoint : ${member.user.tag}`);
     
@@ -49,7 +42,6 @@ client.on('guildMemberAdd', async (member) => {
         handleRoleAlert(member);
     }
 });
-
 async function handleRoleAlert(member) {
     const alertChannel = member.guild.channels.cache.get(ALERT_CHANNEL_ID);
     if (alertChannel) {
@@ -60,7 +52,6 @@ async function handleRoleAlert(member) {
             .setDescription(`**${member.user.tag}** a pris le rôle interdit.\nBannissement dans \`\`${BAN_DELAY / 1000} secondes\`\`...`)
             .setTimestamp()
             .setFooter({ text: 'Système de gestion des rôles' });
-
         // Envoi du message initial avec l'embed
         const alertMessage = await alertChannel.send({ embeds: [alertEmbed] });
         
@@ -85,7 +76,6 @@ async function handleRoleAlert(member) {
                 try {
                     await refreshedMember.ban({ reason: 'Non respect des règles du serveur (1)' });
                     console.log(`${refreshedMember.user.tag} a été banni pour non respect des règles.`);
-
                     // Notification dans le canal d'alerte avec un embed
                     const banEmbed = new EmbedBuilder()
                         .setColor('#FF0000')
@@ -102,7 +92,6 @@ async function handleRoleAlert(member) {
                 // Si le membre retire le rôle, le bannissement est annulé
                 alertEmbed.setColor('#00FF00') // Vert pour le succès
                     .setDescription(`✅ | **${member.user.tag}** a retiré le rôle interdit à temps, bannissement annulé.`);
-
                 alertMessage.edit({ embeds: [alertEmbed] });
             }
         }, BAN_DELAY);
